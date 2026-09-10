@@ -1,0 +1,136 @@
+{
+  "project_title": "IPF Powerlifting Meet Nominations Leaderboard",
+  "archetype": "THE PERFORMANCE PRO (Elite Athleticism & Competition Leaderboard)",
+  "theme": "Dark Mode First (Dark Navy #0B132B / #1C2541, Signal Red #E63946, Crimson Glow #D62828, Crisp Silver #E0E1DD)",
+  "typography": {
+    "heading_font": "Barlow Condensed / Oswald / Chivo (Bold, Condensed, Athletic Impact)",
+    "body_font": "Inter / Geist / DM Sans",
+    "mono_font": "JetBrains Mono / IBM Plex Mono (for bodyweights, lift numbers, DOTS, total, rankings)",
+    "scale": {
+      "h1": "text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight",
+      "h2": "text-2xl md:text-3xl font-bold uppercase tracking-snug",
+      "h3": "text-xl md:text-2xl font-bold tracking-normal",
+      "body": "text-sm md:text-base font-normal leading-relaxed",
+      "table_header": "text-xs font-semibold uppercase tracking-wider text-slate-400",
+      "badge": "text-xs font-mono font-bold tracking-widest uppercase"
+    }
+  },
+  "colors": {
+    "bg_navy_deep": "#080F20",
+    "bg_navy_card": "#101B35",
+    "bg_navy_elevated": "#17264A",
+    "border_navy_stroke": "#1E305B",
+    "signal_red": "#E63946",
+    "signal_red_hover": "#FF4D5A",
+    "signal_red_glow": "rgba(230, 57, 70, 0.25)",
+    "gold_first_place": "#FFD166",
+    "silver_second_place": "#CBD5E1",
+    "bronze_third_place": "#D97706",
+    "text_primary": "#F8FAFC",
+    "text_secondary": "#94A3B8",
+    "text_muted": "#64748B"
+  },
+  "visual_enhancers": {
+    "card_style": "Sharp rectangular borders (max 6px rounded) with 1px border-[#1E305B] and subtle red/navy ambient glow on hover",
+    "table_style": "High-density crisp competition grid with alternating row contrast, hover highlight line, and sticky header bar",
+    "accent_bars": "Vertical signal red indicators on active tab and top-ranked lifter row",
+    "blur_effect": "backdrop-blur-md bg-[#080F20]/80 for fixed navigation and sticky filter headers"
+  },
+  "ipf_categories": {
+    "boys_categories": [
+      "All Categories",
+      "53 kg (Sub-Jr/Jr)",
+      "59 kg",
+      "66 kg",
+      "74 kg",
+      "83 kg",
+      "93 kg",
+      "105 kg",
+      "120 kg",
+      "120+ kg"
+    ],
+    "girls_categories": [
+      "All Categories",
+      "43 kg (Sub-Jr/Jr)",
+      "47 kg",
+      "52 kg",
+      "57 kg",
+      "63 kg",
+      "69 kg",
+      "76 kg",
+      "84 kg",
+      "84+ kg"
+    ]
+  },
+  "google_sheet_integration": {
+    "sheet_url": "https://docs.google.com/spreadsheets/d/1di092MyHACgqD_uRcb_87ZZhyVeOkFFwE3SQwdmtXOE/edit?usp=sharing",
+    "flexible_headers": {
+      "name": ["name", "lifter", "athlete", "full name", "lifter name"],
+      "gender": ["gender", "sex", "division", "boys/girls"],
+      "bodyweight": ["bodyweight", "bw", "weight", "body weight (kg)"],
+      "category": ["category", "weight category", "wt cat", "class", "weight class"],
+      "squat": ["squat", "sq", "nominated squat", "squat (kg)"],
+      "bench": ["bench", "bp", "bench press", "nominated bench", "bench (kg)"],
+      "deadlift": ["deadlift", "dl", "nominated deadlift", "deadlift (kg)"],
+      "total": ["total", "tot", "nominated total", "total (kg)"]
+    }
+  },
+  "image_urls": {
+    "hero_banner_1": "https://images.unsplash.com/photo-1574680096145-d05b474e2155?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "hero_banner_2": "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "hero_banner_3": "https://images.unsplash.com/photo-1554284126-aa88f22d8b74?crop=entropy&cs=srgb&fm=jpg&q=85"
+  },
+  "component_hierarchy": [
+    {
+      "name": "MeetHeader",
+      "description": "Sticky competition top bar with Meet Title, Live Feed Status indicator, Refresh Button, and quick stats badge",
+      "data_testid": "meet-header"
+    },
+    {
+      "name": "HeroSection",
+      "description": "Dramatic dark navy hero with bold athletic typography, competition countdown/date badge, total nominations count, and Google Sheet sync badge",
+      "data_testid": "hero-section"
+    },
+    {
+      "name": "DivisionTabs",
+      "description": "Boys vs Girls primary toggle tabs with Signal Red high-contrast active state and lifter count pill badges",
+      "data_testid": "division-tabs"
+    },
+    {
+      "name": "SearchAndFilterBar",
+      "description": "Lifter search input, IPF weight class selector chips, and sort metric selector (Total, Squat, Bench, Deadlift, Bodyweight)",
+      "data_testid": "search-filter-bar"
+    },
+    {
+      "name": "NominationsTable",
+      "description": "Crisp athletic leaderboard grid showing Rank, Lifter Name, Bodyweight, Nominated Category, Squat, Bench, Deadlift, Total, and DOTS estimation when available",
+      "data_testid": "nominations-table"
+    },
+    {
+      "name": "LifterDetailModal",
+      "description": "Quick view modal on lifter row click showing attempt breakdown card, bodyweight-to-total ratio, and category ranking",
+      "data_testid": "lifter-detail-modal"
+    },
+    {
+      "name": "SheetConfigDrawer",
+      "description": "Optional administrative/debug drawer allowing quick updates to Google Sheet URL and column mapping verification",
+      "data_testid": "sheet-config-drawer"
+    }
+  ],
+  "testing_requirements": {
+    "mandatory_attribute": "data-testid",
+    "naming_convention": "kebab-case (e.g. data-testid=\"division-tab-boys\", data-testid=\"search-input\", data-testid=\"nomination-row-1\")",
+    "file_extension": "JavaScript (.js) files only. Do NOT use .tsx"
+  },
+  "instructions_to_main_agent": [
+    "Use dark mode as primary theme with dark navy backgrounds (#080F20, #101B35) and signal red accents (#E63946).",
+    "Implement CSV fetcher for Google Sheet URL: convert '/edit?usp=sharing' or export link to 'pub?output=csv' or 'export?format=csv'. Provide graceful fallback sample data if sheet fetch is blocked by CORS.",
+    "Implement flexible header matching for Name, Gender, Bodyweight, Category, Squat, Bench, Deadlift, Total.",
+    "Categorize entries into Boys and Girls sections based on Gender/Division column or IPF weight class format.",
+    "Filter by IPF weight classes for Boys (53kg, 59kg, 66kg, 74kg, 83kg, 93kg, 105kg, 120kg, 120+kg) and Girls (43kg, 47kg, 52kg, 57kg, 63kg, 69kg, 76kg, 84kg, 84+kg).",
+    "Include real-time search box by lifter name and sort buttons for Total, Squat, Bench, Deadlift.",
+    "Ensure every interactive element (button, tab, input, modal trigger, row) has a descriptive data-testid attribute.",
+    "Add responsive mobile view with scrollable data table and card view option for small viewports.",
+    "Provide live sync status badge with manual 'Refresh Feed' trigger and timestamp."
+  ]
+}

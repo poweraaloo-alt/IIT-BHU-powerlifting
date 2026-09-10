@@ -1,0 +1,59 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/sora";
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/jetbrains-mono";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: "Sora Variable", sans-serif;
+  --font-sans: "DM Sans Variable", sans-serif;
+  --font-mono: "JetBrains Mono Variable", monospace;
+  --color-border: #1e305b;
+  --color-ring: #e63946;
+  --color-background: #080f20;
+  --color-foreground: #f8fafc;
+  --color-primary: #e63946;
+  --color-primary-foreground: #ffffff;
+  --color-muted: #101b35;
+  --color-muted-foreground: #94a3b8;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+}
+
+:root { color-scheme: dark; }
+
+@keyframes feed-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes signal-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.35); }
+  50% { box-shadow: 0 0 0 5px rgba(230, 57, 70, 0); }
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html { @apply font-sans; background: #080f20; }
+  body { @apply bg-background text-foreground antialiased; margin: 0; }
+  button, a, input, select { transition-property: color, background-color, border-color, box-shadow, transform; transition-duration: 180ms; transition-timing-function: ease-out; }
+  button:active:not(:disabled) { transform: translateY(1px); }
+}
+
+@layer components {
+  .font-heading { font-family: "Sora Variable", sans-serif; }
+  .font-mono { font-family: "JetBrains Mono Variable", monospace; }
+  .section-kicker { @apply font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-[#E63946]; }
+  .metric-label { @apply mb-1 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#64748B]; }
+  .event-detail-label { @apply font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#64748B]; }
+  .event-detail-value { @apply mt-1 text-xs font-medium text-[#E0E1DD]; }
+  .event-detail-note { @apply font-mono text-[9px] uppercase text-[#E63946]; }
+  .event-social-link { @apply inline-flex items-center gap-1 font-mono text-[10px] font-bold text-[#FF6B73] hover:text-white; }
+}
+
+[data-testid="hero-section"] { animation: feed-in 500ms ease-out both; }
+[data-testid="feed-status"] span { animation: signal-pulse 2.2s ease-in-out infinite; }
