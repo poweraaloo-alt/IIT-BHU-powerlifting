@@ -66,9 +66,7 @@ export default function MeetNav() {
           </div>
           <div data-testid="event-reporting-time">
             <p className="event-detail-label">Reporting</p>
-            <p className="event-detail-value">
-              6:00 PM <span className="event-detail-note">(tentative)</span>
-            </p>
+            <p className="event-detail-value">6:00 PM</p>
           </div>
           <div data-testid="event-venue">
             <p className="event-detail-label">Venue</p>
