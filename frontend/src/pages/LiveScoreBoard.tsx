@@ -24,12 +24,23 @@ function displayValue(value: string | undefined) {
   return value?.trim() || "—";
 }
 
+function isTeamHeader(header: string) {
+  return /^team$/i.test(header.trim());
+}
+
 function ScoreCard({ row, headers }: { row: LiveScoreRow; headers: string[] }) {
+  const nameHeader = headers.find((header) => /^(name|lifter|athlete|fullname|liftername)$/i.test(header.trim())) ?? headers[0];
+  const teamHeader = headers.find(isTeamHeader);
+  const otherHeaders = headers.filter((header) => header !== nameHeader && header !== teamHeader);
+
   return (
     <article className="relative border border-[#1E305B] bg-[#101B35] p-4" data-testid={`live-score-card-${row.id}`}>
       <div className="absolute inset-y-0 left-0 w-1 bg-[#E63946]" />
-      <h3 className="pl-2 font-heading text-xl font-bold uppercase">{displayValue(row.values[headers[0]])}</h3>
-      <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#1E305B] pt-3">{headers.slice(1).map((header) => <div key={header}><p className="metric-label">{labelForHeader(header)}</p><p className="font-mono text-sm text-[#E0E1DD]">{displayValue(row.values[header])}</p></div>)}</div>
+      <div className="pl-2">
+        <h3 className="font-heading text-xl font-bold uppercase">{displayValue(row.values[nameHeader])}</h3>
+        {teamHeader && <p className="mt-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[#FFB703]">{displayValue(row.values[teamHeader])}</p>}
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#1E305B] pt-3">{otherHeaders.map((header) => <div key={header}><p className="metric-label">{labelForHeader(header)}</p><p className="font-mono text-sm text-[#E0E1DD]">{displayValue(row.values[header])}</p></div>)}</div>
     </article>
   );
 }
@@ -75,7 +86,7 @@ export default function LiveScoreBoard() {
           {liveScoresQuery.isError && <div className="mt-5 border border-[#E63946]/50 bg-[#E63946]/10 p-4" data-testid="live-score-error"><p className="font-heading font-bold uppercase">Live scores unavailable</p><p className="mt-1 text-sm text-[#FFB7BB]">The live score board could not be loaded right now. Please try again shortly.</p></div>}
           {liveScoresQuery.isPending && <div className="mt-5 grid gap-2" data-testid="live-score-loading">{[1, 2].map((item) => <div key={item} className="h-16 animate-pulse border border-[#1E305B] bg-[#101B35]" />)}</div>}
           {!liveScoresQuery.isPending && !liveScoresQuery.isError && rows.length === 0 && <div className="mt-5 border border-dashed border-[#1E305B] p-10 text-center" data-testid="live-score-empty"><p className="font-heading text-xl font-bold uppercase">Waiting for platform scores</p><p className="mt-2 text-sm text-[#94A3B8]">Live attempts will appear here as the score board is filled.</p></div>}
-          {rows.length > 0 && data && <><div className="mt-5 hidden overflow-x-auto border border-[#1E305B] md:block" data-testid="live-score-table"><table className="w-full min-w-[1100px] border-collapse text-left"><thead className="bg-[#17264A]"><tr className="border-b border-[#1E305B]">{data.headers.map((header) => <th key={header} className="px-4 py-4 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#94A3B8]">{labelForHeader(header)}</th>)}</tr></thead><tbody>{rows.map((row) => <tr key={row.id} className="group border-b border-[#1E305B]/70 bg-[#101B35] hover:bg-[#17264A]" data-testid={`live-score-row-${row.id}`}>{data.headers.map((header) => <td key={header} className="px-4 py-4 font-mono text-sm text-[#E0E1DD]">{displayValue(row.values[header])}</td>)}</tr>)}</tbody></table></div><div className="mt-5 grid gap-3 md:hidden" data-testid="live-score-cards">{rows.map((row) => <ScoreCard key={row.id} row={row} headers={data.headers} />)}</div></>}
+          {rows.length > 0 && data && <><div className="mt-5 hidden overflow-x-auto border border-[#1E305B] md:block" data-testid="live-score-table"><table className="w-full min-w-[1100px] border-collapse text-left"><thead className="bg-[#17264A]"><tr className="border-b border-[#1E305B]">{data.headers.map((header) => <th key={header} className="px-4 py-4 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#94A3B8]">{labelForHeader(header)}</th>)}</tr></thead><tbody>{rows.map((row) => <tr key={row.id} className="group border-b border-[#1E305B]/70 bg-[#101B35] hover:bg-[#17264A]" data-testid={`live-score-row-${row.id}`}>{data.headers.map((header) => <td key={header} className={`px-4 py-4 font-mono text-sm ${isTeamHeader(header) ? "font-bold text-[#FFB703]" : "text-[#E0E1DD]"}`}>{displayValue(row.values[header])}</td>)}</tr>)}</tbody></table></div><div className="mt-5 grid gap-3 md:hidden" data-testid="live-score-cards">{rows.map((row) => <ScoreCard key={row.id} row={row} headers={data.headers} />)}</div></>}
         </section>
       </div>
     </main>
