@@ -19,6 +19,7 @@ HEADER_ALIASES = {
     "rank": {"rank", "position", "place"},
     "lifter": {"lifter", "name", "athlete", "fullname", "liftername"},
     "team": {"team", "college", "institution", "club"},
+    "event": {"event", "competition", "meet", "eventname"},
     "division": {"sex", "gender", "division"},
     "age": {"age", "years"},
     "bodyweight": {"weight", "bodyweight", "bw", "bodyweightkg"},
@@ -110,6 +111,7 @@ async def _fetch_entries() -> list[LeaderboardEntry]:
         if not lifter:
             continue
         team = (row.get(columns["team"]) or "").strip() if columns["team"] else ""
+        event = (row.get(columns["event"]) or "").strip() if columns["event"] else ""
         division = _division(row.get(columns["division"]) if columns["division"] else None)
         squat = _number(row.get(columns["squat"])) if columns["squat"] else None
         bench = _number(row.get(columns["bench"])) if columns["bench"] else None
@@ -117,16 +119,18 @@ async def _fetch_entries() -> list[LeaderboardEntry]:
         total = _number(row.get(columns["total"])) if columns["total"] else None
         if total is None and squat is not None and bench is not None and deadlift is not None:
             total = squat + bench + deadlift
+        bodyweight = _number(row.get(columns["bodyweight"])) if columns["bodyweight"] else None
         entries.append(
             LeaderboardEntry(
-                id=str(uuid.uuid5(uuid.NAMESPACE_URL, f"{SHEET_URL}:{source_row}:{lifter}:{team}")),
+                id=str(uuid.uuid5(uuid.NAMESPACE_URL, f"{SHEET_URL}:{source_row}:{lifter}:{team}:{event}")),
                 rank=int(_number(row.get(columns["rank"]))) if columns["rank"] and _number(row.get(columns["rank"])) is not None else None,
                 lifter=lifter,
                 team=team,
+                event=event,
                 division=division,
                 age=_number(row.get(columns["age"])) if columns["age"] else None,
-                bodyweight=_number(row.get(columns["bodyweight"])) if columns["bodyweight"] else None,
-                category=_category(division, _number(row.get(columns["bodyweight"])) if columns["bodyweight"] else None, row.get(columns["category"]) if columns["category"] else None),
+                bodyweight=bodyweight,
+                category=_category(division, bodyweight, row.get(columns["category"]) if columns["category"] else None),
                 squat=squat,
                 bench=bench,
                 deadlift=deadlift,
