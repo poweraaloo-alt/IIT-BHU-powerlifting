@@ -8,11 +8,12 @@ import { apiGet } from "@/lib/api";
 import type { Nomination, NominationGender, NominationsResponse } from "@/lib/types";
 import MeetNav from "@/components/MeetNav";
 
-const CATEGORY_OPTIONS: Record<NominationGender, string[]> = {
-  boys: ["All Categories", "53 kg", "59 kg", "66 kg", "74 kg", "83 kg", "93 kg", "105 kg", "120 kg", "120+ kg"],
-  girls: ["All Categories", "43 kg", "47 kg", "52 kg", "57 kg", "63 kg", "69 kg", "76 kg", "84 kg", "84+ kg"],
-};
+const CATEGORY_ORDER = [
+  "43 kg", "47 kg", "52 kg", "53 kg", "57 kg", "59 kg", "63 kg", "66 kg", "69 kg",
+  "74 kg", "76 kg", "83 kg", "84 kg", "84+ kg", "93 kg", "105 kg", "120 kg", "120+ kg",
+];
 
+type SexFilter = "all" | NominationGender;
 type SortField = "category" | "total" | "bodyweight";
 
 const fetchNominations = () => apiGet<NominationsResponse>("/nominations");
@@ -43,7 +44,8 @@ function NominationCard({ nomination, rank }: { nomination: Nomination; rank: nu
         <div>
           <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-[#64748B]">#{String(rank).padStart(2, "0")} / {nomination.category}</p>
           <h3 className="mt-2 font-heading text-xl font-bold uppercase tracking-tight text-[#F8FAFC]">{nomination.name}</h3>
-          <p className="mt-1 font-mono text-xs text-[#94A3B8]">BODYWEIGHT {nomination.bodyweight} KG</p>
+          <p className="mt-1 font-mono text-[10px] uppercase text-[#FFB703]">{nomination.team || "—"}</p>
+          <p className="mt-1 font-mono text-xs text-[#94A3B8]">{nomination.gender} / BODYWEIGHT {nomination.bodyweight} KG</p>
         </div>
         <Dumbbell className="mt-1 size-5 text-[#E63946]" aria-hidden="true" />
       </div>
@@ -58,31 +60,42 @@ function NominationCard({ nomination, rank }: { nomination: Nomination; rank: nu
 }
 
 export default function Home() {
-  const [division, setDivision] = useState<NominationGender>("boys");
-  const [category, setCategory] = useState("All Categories");
+  const [sex, setSex] = useState<SexFilter>("all");
+  const [team, setTeam] = useState("All Teams");
+  const [category, setCategory] = useState("All Weight Categories");
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<SortField>("category");
   const nominationsQuery = useQuery({ queryKey: ["nominations"], queryFn: fetchNominations, retry: false, staleTime: 30_000 });
   const data = nominationsQuery.data;
 
+  const teamOptions = useMemo(() => {
+    const teams = new Set((data?.nominations ?? []).map((nomination) => nomination.team.trim()).filter(Boolean));
+    return ["All Teams", ...Array.from(teams).sort((a, b) => a.localeCompare(b))];
+  }, [data?.nominations]);
+
+  const categoryOptions = useMemo(() => {
+    const categories = new Set((data?.nominations ?? []).map((nomination) => nomination.category).filter(Boolean));
+    return ["All Weight Categories", ...Array.from(categories).sort((a, b) => {
+      const ai = CATEGORY_ORDER.indexOf(a);
+      const bi = CATEGORY_ORDER.indexOf(b);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) || a.localeCompare(b, undefined, { numeric: true });
+    })];
+  }, [data?.nominations]);
+
   const nominations = useMemo(() => {
     const filtered = (data?.nominations ?? []).filter((nomination) => {
-      const matchesDivision = nomination.gender === division;
-      const matchesCategory = category === "All Categories" || nomination.category === category;
-      const matchesSearch = nomination.name.toLowerCase().includes(search.trim().toLowerCase());
-      return matchesDivision && matchesCategory && matchesSearch;
+      const matchesSex = sex === "all" || nomination.gender === sex;
+      const matchesTeam = team === "All Teams" || nomination.team === team;
+      const matchesCategory = category === "All Weight Categories" || nomination.category === category;
+      const matchesSearch = `${nomination.name} ${nomination.team} ${nomination.category}`.toLowerCase().includes(search.trim().toLowerCase());
+      return matchesSex && matchesTeam && matchesCategory && matchesSearch;
     });
     return [...filtered].sort((a, b) => {
       if (sortField === "total") return (b.total ?? -1) - (a.total ?? -1);
       if (sortField === "bodyweight") return a.bodyweight - b.bodyweight;
       return a.category.localeCompare(b.category, undefined, { numeric: true }) || a.name.localeCompare(b.name);
     });
-  }, [category, data?.nominations, division, search, sortField]);
-
-  const switchDivision = (nextDivision: NominationGender) => {
-    setDivision(nextDivision);
-    setCategory("All Categories");
-  };
+  }, [category, data?.nominations, search, sex, sortField, team]);
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#080F20] text-[#F8FAFC]" data-testid="nominations-page">
@@ -113,38 +126,41 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4" data-testid="division-tabs">
-            <div className="flex flex-wrap gap-2">
-              {(["boys", "girls"] as NominationGender[]).map((item) => (
-                <Button key={item} variant={division === item ? "default" : "outline"} className={`h-12 min-w-32 justify-between rounded-none border-[#1E305B] px-4 font-heading text-base font-bold uppercase tracking-wide ${division === item ? "bg-[#E63946] text-white hover:bg-[#FF4D5A]" : "bg-[#101B35] text-[#94A3B8] hover:border-[#E63946] hover:bg-[#17264A] hover:text-white"}`} onClick={() => switchDivision(item)} data-testid={`division-tab-${item}`}>
-                  {item} <span className="ml-4 font-mono text-xs opacity-70">{item === "boys" ? data?.boys_count ?? 0 : data?.girls_count ?? 0}</span>
-                </Button>
-              ))}
-            </div>
-
-            <div className="grid gap-3 border border-[#1E305B] bg-[#101B35]/70 p-3 md:grid-cols-[minmax(220px,1fr)_auto_auto] md:items-center" data-testid="search-filter-bar">
-              <label className="relative block">
-                <span className="sr-only">Search lifters</span>
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#64748B]" />
-                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search lifter name..." className="h-11 rounded-none border-[#1E305B] bg-[#080F20] pl-10 text-sm text-white placeholder:text-[#64748B] focus-visible:border-[#E63946] focus-visible:ring-[#E63946]/30" data-testid="search-input" />
-              </label>
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 md:max-w-[520px]" data-testid="category-filters">
-                {CATEGORY_OPTIONS[division].map((option) => (
-                  <button type="button" key={option} onClick={() => setCategory(option)} className={`shrink-0 border px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-wider transition-[background-color,border-color,color] ${category === option ? "border-[#E63946] bg-[#E63946]/15 text-[#FF6B73]" : "border-[#1E305B] bg-[#080F20] text-[#64748B] hover:border-[#94A3B8] hover:text-[#E0E1DD]"}`} data-testid={`category-filter-${option.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>
-                      {option.replace("All Categories", "All")}
-                  </button>
-                ))}
-              </div>
-              <label className="flex items-center gap-2 whitespace-nowrap font-mono text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
-                <ArrowDownUp className="size-3" />
-                <span>Sort</span>
-                <select value={sortField} onChange={(event) => setSortField(event.target.value as SortField)} className="h-10 border border-[#1E305B] bg-[#080F20] px-2 text-[10px] text-[#E0E1DD] outline-none focus:border-[#E63946]" data-testid="sort-select">
-                  <option value="category">Category</option>
-                  <option value="total">Total</option>
-                  <option value="bodyweight">Bodyweight</option>
-                </select>
-              </label>
-            </div>
+          <div className="mt-6 grid gap-3 border border-[#1E305B] bg-[#101B35]/70 p-3 md:grid-cols-2 xl:grid-cols-5" data-testid="search-filter-bar">
+            <label className="relative block xl:col-span-2">
+              <span className="sr-only">Search lifters</span>
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#64748B]" />
+              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search lifter, team, or category..." className="h-11 rounded-none border-[#1E305B] bg-[#080F20] pl-10 text-sm text-white placeholder:text-[#64748B] focus-visible:border-[#E63946] focus-visible:ring-[#E63946]/30" data-testid="search-input" />
+            </label>
+            <label className="flex items-center gap-2">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#64748B]">Sex</span>
+              <select value={sex} onChange={(event) => setSex(event.target.value as SexFilter)} className="h-11 min-w-0 flex-1 border border-[#1E305B] bg-[#080F20] px-2 text-[10px] uppercase text-[#E0E1DD] outline-none focus:border-[#E63946]" data-testid="sex-filter">
+                <option value="all">All Sexes</option>
+                <option value="boys">Boys ({data?.boys_count ?? 0})</option>
+                <option value="girls">Girls ({data?.girls_count ?? 0})</option>
+              </select>
+            </label>
+            <label className="flex items-center gap-2">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#64748B]">Team</span>
+              <select value={teamOptions.includes(team) ? team : "All Teams"} onChange={(event) => setTeam(event.target.value)} className="h-11 min-w-0 flex-1 border border-[#1E305B] bg-[#080F20] px-2 text-[10px] uppercase text-[#E0E1DD] outline-none focus:border-[#E63946]" data-testid="team-filter">
+                {teamOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+              </select>
+            </label>
+            <label className="flex items-center gap-2">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#64748B]">Weight</span>
+              <select value={categoryOptions.includes(category) ? category : "All Weight Categories"} onChange={(event) => setCategory(event.target.value)} className="h-11 min-w-0 flex-1 border border-[#1E305B] bg-[#080F20] px-2 text-[10px] uppercase text-[#E0E1DD] outline-none focus:border-[#E63946]" data-testid="category-filter">
+                {categoryOptions.map((option) => <option key={option} value={option}>{option.replace("All Weight Categories", "All")}</option>)}
+              </select>
+            </label>
+            <label className="flex items-center gap-2">
+              <ArrowDownUp className="size-3 text-[#64748B]" />
+              <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#64748B]">Sort</span>
+              <select value={sortField} onChange={(event) => setSortField(event.target.value as SortField)} className="h-11 min-w-0 flex-1 border border-[#1E305B] bg-[#080F20] px-2 text-[10px] text-[#E0E1DD] outline-none focus:border-[#E63946]" data-testid="sort-select">
+                <option value="category">Category</option>
+                <option value="total">Total</option>
+                <option value="bodyweight">Bodyweight</option>
+              </select>
+            </label>
           </div>
 
           {nominationsQuery.isError && (
@@ -162,24 +178,24 @@ export default function Home() {
           {!nominationsQuery.isPending && !nominationsQuery.isError && nominations.length === 0 && (
             <div className="mt-5 border border-dashed border-[#1E305B] p-10 text-center" data-testid="nominations-empty">
               <p className="font-heading text-xl font-bold uppercase">No nominations match</p>
-              <p className="mt-2 text-sm text-[#94A3B8]">Try another category or clear your search.</p>
+              <p className="mt-2 text-sm text-[#94A3B8]">Try another team, weight category, sex, or clear your search.</p>
             </div>
           )}
 
           {nominations.length > 0 && (
             <>
               <div className="mt-5 hidden overflow-x-auto border border-[#1E305B] md:block" data-testid="nominations-table">
-                <table className="w-full min-w-[820px] border-collapse text-left">
-                  <thead className="bg-[#17264A]">
-                    <tr className="border-b border-[#1E305B]">
-                      {['Rank', 'Lifter', 'Bodyweight', 'Category', 'Squat', 'Bench', 'Deadlift', 'Total'].map((header) => <th key={header} className="px-4 py-4 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#94A3B8]">{header}</th>)}
-                    </tr>
-                  </thead>
+                <table className="w-full min-w-[940px] border-collapse text-left">
+                  <thead className="bg-[#17264A]"><tr className="border-b border-[#1E305B]">
+                    {['Rank', 'Lifter', 'Team', 'Sex', 'Bodyweight', 'Category', 'Squat', 'Bench', 'Deadlift', 'Total'].map((header) => <th key={header} className="px-4 py-4 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#94A3B8]">{header}</th>)}
+                  </tr></thead>
                   <tbody>
                     {nominations.map((nomination, index) => (
                       <tr key={nomination.id} className="group border-b border-[#1E305B]/70 bg-[#101B35] hover:bg-[#17264A]" data-testid={`nomination-row-${nomination.id}`}>
                         <td className="w-16 border-l-2 border-transparent px-4 py-4 font-mono text-xs text-[#64748B] group-hover:border-[#E63946]">{String(index + 1).padStart(2, "0")}</td>
-                        <td className="px-4 py-4"><p className="font-heading text-base font-bold uppercase text-[#F8FAFC]">{nomination.name}</p><p className="mt-1 font-mono text-[10px] uppercase text-[#64748B]">{nomination.gender}</p></td>
+                        <td className="px-4 py-4"><p className="font-heading text-base font-bold uppercase text-[#F8FAFC]">{nomination.name}</p></td>
+                        <td className="px-4 py-4 font-mono text-xs font-bold text-[#FFB703]">{nomination.team || "—"}</td>
+                        <td className="px-4 py-4 font-mono text-xs uppercase text-[#94A3B8]">{nomination.gender}</td>
                         <td className="px-4 py-4 font-mono text-sm text-[#E0E1DD]">{nomination.bodyweight} kg</td>
                         <td className="px-4 py-4"><span className="border border-[#E63946]/40 bg-[#E63946]/10 px-2 py-1 font-mono text-xs font-bold text-[#FF6B73]">{nomination.category}</span></td>
                         <td className="px-4 py-4"><LiftValue value={nomination.squat} /></td>
