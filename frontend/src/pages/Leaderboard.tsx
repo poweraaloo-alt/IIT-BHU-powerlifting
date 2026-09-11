@@ -11,12 +11,13 @@ import type { LeaderboardEntry, LeaderboardResponse } from "@/lib/types";
 
 type SortField = keyof Pick<
   LeaderboardEntry,
-  "lifter" | "team" | "division" | "age" | "bodyweight" | "category" | "squat" | "bench" | "deadlift" | "total" | "dots"
+  "lifter" | "team" | "event" | "division" | "age" | "bodyweight" | "category" | "squat" | "bench" | "deadlift" | "total" | "dots"
 >;
 
 const sortOptions: { value: SortField; label: string }[] = [
   { value: "lifter", label: "Lifter" },
   { value: "team", label: "Team" },
+  { value: "event", label: "Event" },
   { value: "division", label: "Division" },
   { value: "age", label: "Age" },
   { value: "bodyweight", label: "Bodyweight" },
@@ -53,6 +54,9 @@ function LeaderboardCard({ entry, position }: { entry: LeaderboardEntry; positio
           <h3 className="mt-2 font-heading text-xl font-bold uppercase tracking-tight">
             {entry.lifter}
           </h3>
+          <p className="mt-1 font-mono text-[10px] uppercase text-[#FFB703]">
+            {textValue(entry.event)}
+          </p>
           <p className="mt-1 font-mono text-[10px] uppercase text-[#94A3B8]">
             {textValue(entry.team)} / {entry.division} / {value(entry.bodyweight)} kg / AGE {value(entry.age)}
           </p>
@@ -99,7 +103,7 @@ export default function Leaderboard() {
 
   const entries = useMemo(() => {
     const filtered = (data?.entries ?? []).filter((entry) =>
-      `${entry.lifter} ${entry.team} ${entry.division} ${entry.category}`
+      `${entry.lifter} ${entry.team} ${entry.event} ${entry.division} ${entry.category}`
         .toLowerCase()
         .includes(search.trim().toLowerCase()),
     );
@@ -174,10 +178,7 @@ export default function Leaderboard() {
               <p className="section-kicker">Sort the field</p>
               <h2 className="mt-2 font-heading text-3xl font-black uppercase tracking-tight sm:text-4xl">Leaderboard</h2>
             </div>
-            <div
-              className="flex items-center gap-2 text-xs text-[#94A3B8]"
-              data-testid="leaderboard-visible-count"
-            >
+            <div className="flex items-center gap-2 text-xs text-[#94A3B8]" data-testid="leaderboard-visible-count">
               <Dumbbell className="size-4 text-[#E63946]" /> Showing{" "}
               <span className="font-mono font-bold text-white">{entries.length}</span> of {data?.total_entries ?? 0}
             </div>
@@ -193,7 +194,7 @@ export default function Leaderboard() {
               <Input
                 value={search}
                 onChange={(event) => handleSearch(event.target.value)}
-                placeholder="Search lifter, team, division, or category..."
+                placeholder="Search lifter, team, event, division, or category..."
                 className="h-11 rounded-none border-[#1E305B] bg-[#080F20] pl-10 text-sm text-white placeholder:text-[#64748B] focus-visible:border-[#E63946]"
                 data-testid="leaderboard-search-input"
               />
@@ -227,10 +228,7 @@ export default function Leaderboard() {
           </div>
 
           {leaderboardQuery.isError && (
-            <div
-              className="mt-5 border border-[#E63946]/50 bg-[#E63946]/10 p-4"
-              data-testid="leaderboard-error"
-            >
+            <div className="mt-5 border border-[#E63946]/50 bg-[#E63946]/10 p-4" data-testid="leaderboard-error">
               <p className="font-heading font-bold uppercase">Leaderboard unavailable</p>
               <p className="mt-1 text-sm text-[#FFB7BB]">
                 The leaderboard could not be loaded right now. Please try again shortly.
@@ -241,19 +239,13 @@ export default function Leaderboard() {
           {leaderboardQuery.isPending && (
             <div className="mt-5 grid gap-2" data-testid="leaderboard-loading">
               {[1, 2, 3].map((item) => (
-                <div
-                  key={item}
-                  className="h-16 animate-pulse border border-[#1E305B] bg-[#101B35]"
-                />
+                <div key={item} className="h-16 animate-pulse border border-[#1E305B] bg-[#101B35]" />
               ))}
             </div>
           )}
 
           {!leaderboardQuery.isPending && !leaderboardQuery.isError && entries.length === 0 && (
-            <div
-              className="mt-5 border border-dashed border-[#1E305B] p-10 text-center"
-              data-testid="leaderboard-empty"
-            >
+            <div className="mt-5 border border-dashed border-[#1E305B] p-10 text-center" data-testid="leaderboard-empty">
               <p className="font-heading text-xl font-bold uppercase">Leaderboard entries coming soon</p>
               <p className="mt-2 text-sm text-[#94A3B8]">
                 Once lifter rows are added, they will appear here with totals and DOTS scores.
@@ -263,37 +255,24 @@ export default function Leaderboard() {
 
           {entries.length > 0 && (
             <>
-              <div
-                className="mt-5 hidden overflow-x-auto border border-[#1E305B] md:block"
-                data-testid="leaderboard-table"
-              >
-                <table className="w-full min-w-[1180px] border-collapse text-left">
+              <div className="mt-5 hidden overflow-x-auto border border-[#1E305B] md:block" data-testid="leaderboard-table">
+                <table className="w-full min-w-[1280px] border-collapse text-left">
                   <thead className="bg-[#17264A]">
                     <tr className="border-b border-[#1E305B]">
-                      {["Rank", "Lifter", "Team", "Division", "Age", "Bodyweight", "Category", "Squat", "Bench", "Deadlift", "Total", "DOTS"].map(
-                        (header) => (
-                          <th
-                            key={header}
-                            className="px-4 py-4 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#94A3B8]"
-                          >
-                            {header}
-                          </th>
-                        ),
-                      )}
+                      {["Rank", "Lifter", "Team", "Event", "Division", "Age", "Bodyweight", "Category", "Squat", "Bench", "Deadlift", "Total", "DOTS"].map((header) => (
+                        <th key={header} className="px-4 py-4 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#94A3B8]">
+                          {header}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {entries.map((entry, index) => (
-                      <tr
-                        key={entry.id}
-                        className="group border-b border-[#1E305B]/70 bg-[#101B35] hover:bg-[#17264A]"
-                        data-testid={`leaderboard-row-${entry.id}`}
-                      >
-                        <td className="border-l-2 border-transparent px-4 py-4 font-mono text-sm text-[#64748B] group-hover:border-[#E63946]">
-                          {index + 1}
-                        </td>
+                      <tr key={entry.id} className="group border-b border-[#1E305B]/70 bg-[#101B35] hover:bg-[#17264A]" data-testid={`leaderboard-row-${entry.id}`}>
+                        <td className="border-l-2 border-transparent px-4 py-4 font-mono text-sm text-[#64748B] group-hover:border-[#E63946]">{index + 1}</td>
                         <td className="px-4 py-4 font-heading text-base font-bold uppercase">{entry.lifter}</td>
                         <td className="px-4 py-4 font-mono text-xs text-[#FFB703]">{textValue(entry.team)}</td>
+                        <td className="px-4 py-4 font-mono text-xs font-bold text-[#FFB703]">{textValue(entry.event)}</td>
                         <td className="px-4 py-4 text-sm text-[#E0E1DD]">{entry.division}</td>
                         <td className="px-4 py-4 font-mono text-sm">{value(entry.age)}</td>
                         <td className="px-4 py-4 font-mono text-sm">{value(entry.bodyweight)} kg</td>
