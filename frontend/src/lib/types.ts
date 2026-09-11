@@ -4,6 +4,7 @@ export interface Nomination {
   id: string;
   name: string;
   gender: NominationGender;
+  team: string;
   bodyweight: number;
   category: string;
   squat: number | null;
