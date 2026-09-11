@@ -7,6 +7,7 @@ class LeaderboardEntry(BaseModel):
     id: str
     rank: int | None = None
     lifter: str
+    team: str
     division: str
     age: float | None = None
     bodyweight: float | None = None
