@@ -147,7 +147,7 @@ export default function Leaderboard() {
     >
       <div className="pointer-events-none fixed inset-0 opacity-20 [background-image:linear-gradient(rgba(30,48,91,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(30,48,91,0.3)_1px,transparent_1px)] [background-size:56px_56px]" />
       <MeetNav />
-      <div className="relative mx-auto max-w-7xl px-5 pb-16 pt-10 lg:px-8 lg:pt-16">
+      <div className="relative mx-auto max-w-[1600px] px-5 pb-16 pt-10 lg:px-8 lg:pt-16">
         <section
           className="grid gap-10 border-b border-[#1E305B] pb-12 lg:grid-cols-[1fr_300px] lg:items-end"
           data-testid="leaderboard-hero"
@@ -256,7 +256,7 @@ export default function Leaderboard() {
           {entries.length > 0 && (
             <>
               <div className="mt-5 hidden overflow-x-auto border border-[#1E305B] md:block" data-testid="leaderboard-table">
-                <table className="w-full min-w-[1280px] border-collapse text-left">
+                <table className="w-full min-w-[1440px] border-collapse text-left">
                   <thead className="bg-[#17264A]">
                     <tr className="border-b border-[#1E305B]">
                       {["Rank", "Lifter", "Team", "Event", "Division", "Age", "Bodyweight", "Category", "Squat", "Bench", "Deadlift", "Total", "DOTS"].map((header) => (
