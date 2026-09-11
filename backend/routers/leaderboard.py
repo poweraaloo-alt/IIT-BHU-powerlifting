@@ -18,6 +18,7 @@ GIRLS_CATEGORIES = ["43 kg", "47 kg", "52 kg", "57 kg", "63 kg", "69 kg", "76 kg
 HEADER_ALIASES = {
     "rank": {"rank", "position", "place"},
     "lifter": {"lifter", "name", "athlete", "fullname", "liftername"},
+    "team": {"team", "college", "institution", "club"},
     "division": {"sex", "gender", "division"},
     "age": {"age", "years"},
     "bodyweight": {"weight", "bodyweight", "bw", "bodyweightkg"},
@@ -108,6 +109,7 @@ async def _fetch_entries() -> list[LeaderboardEntry]:
         lifter = (row.get(columns["lifter"]) or "").strip()
         if not lifter:
             continue
+        team = (row.get(columns["team"]) or "").strip() if columns["team"] else ""
         division = _division(row.get(columns["division"]) if columns["division"] else None)
         squat = _number(row.get(columns["squat"])) if columns["squat"] else None
         bench = _number(row.get(columns["bench"])) if columns["bench"] else None
@@ -117,9 +119,10 @@ async def _fetch_entries() -> list[LeaderboardEntry]:
             total = squat + bench + deadlift
         entries.append(
             LeaderboardEntry(
-                id=str(uuid.uuid5(uuid.NAMESPACE_URL, f"{SHEET_URL}:{source_row}:{lifter}")),
+                id=str(uuid.uuid5(uuid.NAMESPACE_URL, f"{SHEET_URL}:{source_row}:{lifter}:{team}")),
                 rank=int(_number(row.get(columns["rank"]))) if columns["rank"] and _number(row.get(columns["rank"])) is not None else None,
                 lifter=lifter,
+                team=team,
                 division=division,
                 age=_number(row.get(columns["age"])) if columns["age"] else None,
                 bodyweight=_number(row.get(columns["bodyweight"])) if columns["bodyweight"] else None,
