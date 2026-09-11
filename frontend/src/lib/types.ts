@@ -26,6 +26,7 @@ export interface LeaderboardEntry {
   id: string;
   rank: number | null;
   lifter: string;
+  team: string;
   division: string;
   age: number | null;
   bodyweight: number | null;
