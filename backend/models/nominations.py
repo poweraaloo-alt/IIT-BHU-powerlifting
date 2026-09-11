@@ -11,6 +11,7 @@ class Nomination(BaseModel):
     id: str
     name: str
     gender: NominationGender
+    team: str
     bodyweight: float
     category: str
     squat: float | None = None
