@@ -21,6 +21,7 @@ GIRLS_CATEGORIES = ["43 kg", "47 kg", "52 kg", "57 kg", "63 kg", "69 kg", "76 kg
 HEADER_ALIASES = {
     "name": {"name", "lifter", "athlete", "fullname", "liftername"},
     "gender": {"gender", "sex", "division", "boysgirls", "teamtryingfor"},
+    "team": {"team", "college", "institution", "club"},
     "bodyweight": {"bodyweight", "bodyweght", "bw", "weight", "bodyweightkg"},
     "category": {"category", "weightcategory", "wtcat", "class", "weightclass"},
     "squat": {"squat", "sq", "nominatedsquat"},
@@ -111,6 +112,7 @@ async def _fetch_nominations() -> list[Nomination]:
     for source_row, row in enumerate(reader, start=2):
         name = (row.get(columns["name"]) or "").strip()
         gender = _gender(row.get(columns["gender"]))
+        team = (row.get(columns["team"]) or "").strip() if columns["team"] else ""
         bodyweight = _number(row.get(columns["bodyweight"]))
         if not name or not gender or bodyweight is None:
             continue
@@ -125,9 +127,10 @@ async def _fetch_nominations() -> list[Nomination]:
 
         nominations.append(
             Nomination(
-                id=str(uuid.uuid5(uuid.NAMESPACE_URL, f"{SHEET_URL}:{source_row}:{name}")),
+                id=str(uuid.uuid5(uuid.NAMESPACE_URL, f"{SHEET_URL}:{source_row}:{name}:{team}")),
                 name=name,
                 gender=gender,
+                team=team,
                 bodyweight=bodyweight,
                 category=_category(gender, bodyweight, supplied_category),
                 squat=squat,
