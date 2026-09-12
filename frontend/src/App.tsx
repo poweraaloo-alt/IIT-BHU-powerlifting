@@ -4,6 +4,7 @@ import Home from "@/pages/Home";
 import MeetFlow from "@/pages/MeetFlow";
 import Leaderboard from "@/pages/Leaderboard";
 import LiveScoreBoard from "@/pages/LiveScoreBoard";
+import Records from "@/pages/Records";
 import { trackEvent } from "@/lib/analytics";
 
 function AnalyticsTracker() {
@@ -17,7 +18,6 @@ function AnalyticsTracker() {
   return null;
 }
 
-// One <Route> per page in src/pages; HashRouter already wraps this in main.tsx.
 export default function App() {
   return (
     <>
@@ -27,6 +27,7 @@ export default function App() {
         <Route path="/meet-flow" element={<MeetFlow />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/live-scoreboard" element={<LiveScoreBoard />} />
+        <Route path="/records" element={<Records />} />
       </Routes>
     </>
   );
