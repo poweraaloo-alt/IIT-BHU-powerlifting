@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, Dumbbell } from "lucide-react";
+import { Activity } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { apiGet } from "@/lib/api";
@@ -35,6 +35,7 @@ function RecordCell({ entries, category, lift }: { entries: LeaderboardEntry[]; 
           <p className="font-mono text-base font-black text-[#F8FAFC]">{format(best[lift])}</p>
           <p className="mt-1 font-heading text-xs font-bold uppercase text-[#FFB703]">{best.lifter}</p>
           {best.team && <p className="mt-1 font-mono text-[9px] uppercase text-[#64748B]">{best.team}</p>}
+          {best.event && <p className="mt-1 font-mono text-[9px] font-bold uppercase tracking-[0.08em] text-[#94A3B8]">{best.event}</p>}
         </div>
       ) : <span className="font-mono text-sm text-[#64748B]">—</span>}
     </td>
